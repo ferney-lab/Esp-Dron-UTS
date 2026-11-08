@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ESP-DRONE UTS - Panel de Control</title>
+    <meta name="description" content="Panel de control responsive para ESP-DRONE UTS. Controla rutinas de vuelo y ajusta trims desde cualquier dispositivo.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #080d1a 0%, #121b2d 100%);
+            --panel-bg: rgba(18, 30, 54, 0.6);
+            --panel-border: rgba(0, 242, 254, 0.15);
+            --panel-border-hover: rgba(0, 242, 254, 0.4);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --color-danger: #ff3366;
+            --color-danger-hover: #ff0044;
+            --danger-glow: rgba(255, 51, 102, 0.4);
+            --color-success: #00f5a0;
+            --success-glow: rgba(0, 245, 160, 0.3);
+            --color-warning: #ffaa00;
+            --text-primary: #ffffff;
+            --text-secondary: #8e9bb4;
+            --text-muted: #53627c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        /* Fondo animado */
+        .bg-glow {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1; pointer-events: none;
+        }
+        .bg-glow::before {
+            content: '';
+            position: absolute;
+            top: -20%; left: -20%;
+            width: 140%; height: 140%;
+            background: radial-gradient(circle at 70% 30%, rgba(79,172,254,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 80%, rgba(0,242,254,0.05) 0%, transparent 40%);
+            filter: blur(80px);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 0.3rem;
+        }
+        .drone-icon {
+            width: 32px; height: 32px;
+            fill: var(--accent-cyan);
+            filter: drop-shadow(0 0 8px var(--accent-glow));
+            animation: float 3s ease-in-out infinite;
+        }
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1.2rem, 5vw, 2rem);
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Layout principal */
+        .layout {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Tarjetas glassmorphism */
+        .card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 1.25rem;
+            transition: border-color 0.3s;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .card:hover { border-color: var(--panel-border-hover); }
+
+        .card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed rgba(255,255,255,0.08);
+            padding-bottom: 0.6rem;
+        }
+
+        /* Status */
+        .conn-status {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+        .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            box-shadow: 0 0 6px var(--text-muted);
+            transition: all 0.3s;
+        }
+        .dot.ok { background: var(--color-success); box-shadow: 0 0 10px var(--color-success); }
+        .dot.fail { background: var(--color-danger); box-shadow: 0 0 10px var(--color-danger); }
+
+        /* Inputs */
+        .conn-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+        .ip-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 0.65rem 0.75rem;
+            color: var(--text-primary);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 0;
+        }
+        .ip-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(0,242,254,0.2);
+        }
+
+        /* Botones */
+        .btn {
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-connect {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #080d1a;
+            padding: 0 1rem;
+            box-shadow: 0 4px 12px var(--accent-glow);
+            white-space: nowrap;
+        }
+
+        .btn-launch {
+            width: 100%;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: #040811;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 900;
+            padding: 1.25rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px var(--accent-glow);
+            letter-spacing: 1px;
+        }
+
+        .btn-routine {
+            width: 100%;
+            background: linear-gradient(135deg, #6c63ff, #4facfe);
+            color: #ffffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.9rem 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(108,99,255,0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-stop {
+            width: 100%;
+            background: linear-gradient(135deg, #ff3366, #dd0033);
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px var(--danger-glow);
+            letter-spacing: 1px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .info-box {
+            background: rgba(0,242,254,0.03);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 0.75rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+        .info-box strong { color: var(--text-primary); }
+        .info-box code {
+            background: rgba(0,0,0,0.3);
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
+
+        /* Telemetría */
+        .tel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .tel-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        .tel-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.5px;
+        }
+        .tel-val {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .tel-unit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Visualizador de actitud */
+        .attitude-viz {
+            height: 140px;
+            background: radial-gradient(circle, rgba(16,27,48,0.8), rgba(6,12,23,0.9));
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            perspective: 400px;
+        }
+        .hz-line {
+            position: absolute;
+            width: 140%; height: 2px;
+            background: rgba(0,242,254,0.2);
+            transition: transform 0.1s ease-out;
+        }
+        .hz-grid {
+            position: absolute;
+            width: 80%; height: 80%;
+            border: 2px dashed rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+        .drone-3d {
+            width: 90px; height: 90px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .drone-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+        .drone-arm {
+            position: absolute;
+            width: 70px; height: 3px;
+            background: linear-gradient(90deg, var(--color-danger), var(--accent-cyan) 50%, var(--accent-cyan));
+            border-radius: 2px;
+        }
+
+        /* Pasos de rutina */
+        .steps { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.15);
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        .step.active {
+            background: rgba(0,242,254,0.05);
+            border-color: rgba(0,242,254,0.2);
+        }
+        .step-n {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-family: 'Orbitron', monospace;
+            color: var(--text-secondary);
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+        .step.active .step-n {
+            background: var(--accent-cyan);
+            color: #080d1a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .step-text { flex: 1; min-width: 0; }
+        .step-t { font-size: 0.8rem; font-weight: 600; }
+        .step-d { font-size: 0.7rem; color: var(--text-secondary); }
+        .step-bar {
+            width: 50px; height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .step-bar-fill {
+            height: 100%; width: 0%;
+            background: var(--accent-cyan);
+            transition: width 0.1s linear;
+        }
+
+        /* TRIM Panel */
+        .trim-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        .trim-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        .trim-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
+        }
+        .trim-val {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+        .trim-val.positive { color: var(--color-success); }
+        .trim-val.negative { color: var(--color-danger); }
+        .trim-val.zero { color: var(--text-muted); }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-glow);
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-glow);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-trim-send {
+            width: 100%;
+            margin-top: 0.75rem;
+            background: linear-gradient(135deg, var(--color-warning), #ff8800);
+            color: #1a1a1a;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(255,170,0,0.3);
+        }
+
+        /* Consola */
+        .console {
+            background: #04070e;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            height: 120px;
+            overflow-y: auto;
+            color: #33ff33;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .log-entry { margin-bottom: 3px; line-height: 1.3; word-break: break-word; }
+        .log-time { color: var(--text-muted); margin-right: 6px; }
+        .log-error { color: var(--color-danger); }
+        .log-success { color: var(--color-success); }
+
+        /* Full width cards */
+        .full-width { grid-column: 1 / -1; }
+
+        /* Animaciones */
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        /* Responsive tweaks */
+        @media (max-width: 480px) {
+            body { padding: 0.5rem; }
+            .card { padding: 1rem; border-radius: 12px; }
+            .btn-launch { font-size: 0.95rem; padding: 1rem; }
+            .btn-stop { font-size: 0.85rem; padding: 0.85rem; }
+            .tel-val { font-size: 1.2rem; }
+            .attitude-viz { height: 120px; }
+            .console { height: 100px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <header>
+        <div class="logo-row">
+            <svg class="drone-icon" viewBox="0 0 24 24">
+                <path d="M22,9.5C22,10.33 21.33,11 20.5,11H19.2C18.6,12.8 17,14.2 15,14.7V17H17C17.55,17 18,17.45 18,18C18,18.55 17.55,19 17,19H15.1C14.7,20.5 13.5,21.6 12,21.9C10.5,21.6 9.3,20.5 8.9,19H7C6.45,19 6,18.55 6,18C6,17.45 6.45,17 7,17H9V14.7C7,14.2 5.4,12.8 4.8,11H3.5C2.67,11 2,10.33 2,9.5C2,8.67 2.67,8 3.5,8H4.8C5.4,6.2 7,4.8 9,4.3V2H7C6.45,2 6,1.55 6,1C6,0.45 6.45,0 7,0H17C17.55,0 18,0.45 18,1C18,1.55 17.55,2 17,2H15V4.3C17,4.8 18.6,6.2 19.2,8H20.5C21.33,8 22,8.67 22,9.5M12,6C8.69,6 6,8.69 6,12C6,15.31 8.69,18 12,18C15.31,18 18,15.31 18,12C18,8.69 15.31,6 12,6Z"/>
+            </svg>
+            <h1>ESP-DRONE UTS</h1>
+        </div>
+        <p>Panel de Control Universal</p>
+    </header>
+
+    <div class="layout">
+
+        <!-- CONEXIÓN -->
+        <div class="card">
+            <div class="card-title">
+                <span>CONEXIÓN</span>
+                <div class="conn-status">
+                    <div class="dot" id="statusDot"></div>
+                    <span id="statusText">Sin conexión</span>
+                </div>
+            </div>
+            <div class="conn-row">
+                <input type="text" id="ipInput" class="ip-input" value="192.168.4.1" placeholder="IP del drone">
+                <button id="btnConnect" class="btn btn-connect" onclick="testConnection()">Probar</button>
+            </div>
+            <div class="info-box">
+                WiFi: <strong>ESP-DRONE_UTS</strong> &nbsp;|&nbsp; Contraseña: <code>drone1234</code>
+            </div>
+        </div>
+
+        <!-- TELEMETRÍA -->
+        <div class="card">
+            <div class="card-title"><span>TELEMETRÍA</span></div>
+            <div class="tel-grid">
+                <div class="tel-item">
+                    <div class="tel-label">Pitch</div>
+                    <div class="tel-val"><span id="valPitch">0.0</span><span class="tel-unit">°</span></div>
+                </div>
+                <div class="tel-item">
+                    <div class="tel-label">Roll</div>
+                    <div class="tel-val"><span id="valRoll">0.0</span><span class="tel-unit">°</span></div>
+                </div>
+            </div>
+            <div class="attitude-viz">
+                <div class="hz-line" id="horizonLine"></div>
+                <div class="hz-grid"></div>
+                <div class="drone-3d" id="droneModel3D">
+                    <div class="drone-dot"></div>
+                    <div class="drone-arm"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLES DE VUELO -->
+        <div class="card">
+            <div class="card-title"><span>SECUENCIA DE VUELO</span></div>
+            <div class="btn-group">
+                <button class="btn btn-launch" onclick="startRoutine(1)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5,17.59L15.59,7H9V5H19V15H17V8.41L6.41,19L5,17.59Z"/></svg>
+                    ELEVACIÓN VERTICAL
+                </button>
+                <button class="btn btn-routine" onclick="startRoutine(2)">
+                    ◻ RUTINA CUADRADO
+                </button>
+                <button class="btn btn-routine" onclick="startRoutine(3)">
+                    ◯ RUTINA CÍRCULO
+                </button>
+                <button class="btn btn-stop" onclick="stopDrone()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2M9,9H15V15H9V9Z"/></svg>
+                    PARAR MOTORES
+                </button>
+            </div>
+        </div>
+
+        <!-- FASES DE RUTINA -->
+        <div class="card">
+            <div class="card-title"><span>FASES DE RUTINA</span></div>
+            <div class="steps">
+                <div class="step" id="step1">
+                    <div class="step-n">1</div>
+                    <div class="step-text">
+                        <div class="step-t">Despegue Vertical</div>
+                        <div class="step-d">Aceleración gradual (0s - 2s)</div>
+                    </div>
+                    <div class="step-bar"><div class="step-bar-fill" id="pbar1"></div></div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-n">2</div>
+                    <div class="step-text">
+                        <div class="step-t">Vuelo Estacionario</div>
+                        <div class="step-d">Potencia máxima (2s - 5s)</div>
+                    </div>
+                    <div class="step-bar"><div class="step-bar-fill" id="pbar2"></div></div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-n">3</div>
+                    <div class="step-text">
+                        <div class="step-t">Descenso y Aterrizaje</div>
+                        <div class="step-d">Reducción de potencia (5s - 7s)</div>
+                    </div>
+                    <div class="step-bar"><div class="step-bar-fill" id="pbar3"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRIM DE MOTORES -->
+        <div class="card full-width">
+            <div class="card-title"><span>TRIM DE MOTORES (COMPENSACIÓN)</span></div>
+            <div class="trim-group">
+                <div class="trim-item">
+                    <div class="trim-label">M1 - Delantero Izq</div>
+                    <div class="trim-val" id="trimVal1">30</div>
+                    <input type="range" id="trimSlider1" min="-50" max="50" value="30" oninput="updateTrimUI()">
+                </div>
+                <div class="trim-item">
+                    <div class="trim-label">M2 - Delantero Der</div>
+                    <div class="trim-val" id="trimVal2">-20</div>
+                    <input type="range" id="trimSlider2" min="-50" max="50" value="-20" oninput="updateTrimUI()">
+                </div>
+                <div class="trim-item">
+                    <div class="trim-label">M3 - Trasero Izq</div>
+                    <div class="trim-val" id="trimVal3">30</div>
+                    <input type="range" id="trimSlider3" min="-50" max="50" value="30" oninput="updateTrimUI()">
+                </div>
+                <div class="trim-item">
+                    <div class="trim-label">M4 - Trasero Der</div>
+                    <div class="trim-val" id="trimVal4">-20</div>
+                    <input type="range" id="trimSlider4" min="-50" max="50" value="-20" oninput="updateTrimUI()">
+                </div>
+            </div>
+            <button class="btn btn-trim-send" onclick="sendTrim()">
+                ⚙ ENVIAR TRIM AL DRON
+            </button>
+        </div>
+
+        <!-- CONSOLA -->
+        <div class="card full-width">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <span style="font-family:'Orbitron',monospace; font-size:0.75rem; font-weight:700; color:var(--text-secondary);">CONSOLA</span>
+                <button onclick="clearConsole()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.7rem; text-decoration:underline;">Limpiar</button>
+            </div>
+            <div id="consoleLog" class="console">
+                <div class="log-entry"><span class="log-time">[00:00:00]</span>Panel inicializado. Conecta al WiFi del dron.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let ipAddress = "192.168.4.1";
+        let isConnected = false;
+        let pollInterval = null;
+        let routineTimer = null;
+        let routineStartTime = 0;
+        let routineActive = false;
+
+        // Cargar IP guardada
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedIp = localStorage.getItem('drone_ip');
+            if (savedIp) {
+                document.getElementById('ipInput').value = savedIp;
+                ipAddress = savedIp;
+            }
+            startPollingStatus();
+        });
+
+        // --- LOGGING ---
+        function addLog(msg, type = 'normal') {
+            const c = document.getElementById('consoleLog');
+            const t = new Date().toTimeString().split(' ')[0];
+            const e = document.createElement('div');
+            e.className = 'log-entry';
+            if (type === 'error') e.classList.add('log-error');
+            if (type === 'success') e.classList.add('log-success');
+            e.innerHTML = `<span class="log-time">[${t}]</span>${msg}`;
+            c.appendChild(e);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function clearConsole() {
+            const t = new Date().toTimeString().split(' ')[0];
+            document.getElementById('consoleLog').innerHTML = `<div class="log-entry"><span class="log-time">[${t}]</span>Consola limpia.</div>`;
+        }
+
+        // --- CONEXIÓN ---
+        async function testConnection() {
+            const ip = document.getElementById('ipInput').value.trim();
+            if (!ip) return;
+            ipAddress = ip;
+            localStorage.setItem('drone_ip', ipAddress);
+            addLog(`Probando conexión con http://${ipAddress}/ ...`);
+
+            try {
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => ctrl.abort(), 2000);
+                const res = await fetch(`http://${ipAddress}/`, { signal: ctrl.signal });
+                clearTimeout(tid);
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setConnected(true);
+                    addLog(`¡Conectado! Respuesta: ${JSON.stringify(data)}`, 'success');
+                    updateTelemetry(data);
+                    // Sincronizar trims si están en la respuesta
+                    if (data.trimM1 !== undefined) syncTrimsFromDrone(data);
+                } else {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+            } catch (err) {
+                setConnected(false);
+                addLog(`Fallo: ${err.message}. ¿Estás conectado al WiFi del dron?`, 'error');
+            }
+        }
+
+        function setConnected(ok) {
+            isConnected = ok;
+            const dot = document.getElementById('statusDot');
+            const txt = document.getElementById('statusText');
+            dot.className = 'dot ' + (ok ? 'ok' : 'fail');
+            txt.textContent = ok ? 'Conectado' : 'Desconectado';
+            txt.style.color = ok ? 'var(--color-success)' : 'var(--color-danger)';
+        }
+
+        // --- RUTINAS ---
+        async function startRoutine(n) {
+            ipAddress = document.getElementById('ipInput').value.trim();
+            addLog(`Enviando rutina ${n}...`);
+
+            try {
+                const res = await fetch(`http://${ipAddress}/routine?n=${n}`);
+                if (res.ok) {
+                    addLog(`Rutina ${n} aceptada por el dron.`, 'success');
+                    if (n === 1) triggerLocalProgress();
+                } else {
+                    addLog(`Error: HTTP ${res.status}`, 'error');
+                }
+            } catch (err) {
+                addLog(`Error de comunicación: ${err.message}`, 'error');
+            }
+        }
+
+        async function stopDrone() {
+            ipAddress = document.getElementById('ipInput').value.trim();
+            addLog(`ENVIANDO STOP DE EMERGENCIA...`, 'error');
+
+            try {
+                const res = await fetch(`http://${ipAddress}/stop`);
+                if (res.ok) {
+                    addLog(`Motores detenidos.`, 'success');
+                    resetRoutineProgress();
+                } else {
+                    addLog(`Drone respondió HTTP ${res.status}`, 'error');
+                }
+            } catch (err) {
+                addLog(`Error al enviar STOP: ${err.message}`, 'error');
+            }
+        }
+
+        // --- TELEMETRÍA ---
+        function updateTelemetry(data) {
+            const pitch = parseFloat(data.pitch) || 0;
+            const roll = parseFloat(data.roll) || 0;
+
+            document.getElementById('valPitch').textContent = pitch.toFixed(1);
+            document.getElementById('valRoll').textContent = roll.toFixed(1);
+
+            document.getElementById('droneModel3D').style.transform = `rotateX(${-pitch}deg) rotateZ(${roll}deg)`;
+            document.getElementById('horizonLine').style.transform = `translateY(${pitch * 1.5}px) rotate(${roll}deg)`;
+
+            if (data.routine === 1 || data.state === 2) {
+                if (data.step >= 1 && data.step <= 3) highlightStep(data.step);
+            } else if (data.state === 0 && !routineActive) {
+                resetStepUI();
+            }
+        }
+
+        function highlightStep(n) {
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById(`step${i}`);
+                el.classList.toggle('active', i === n);
+            }
+        }
+
+        function resetStepUI() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`step${i}`).classList.remove('active');
+                document.getElementById(`pbar${i}`).style.width = '0%';
+            }
+        }
+
+        // --- ANIMACIÓN DE PROGRESO ---
+        function triggerLocalProgress() {
+            if (routineTimer) clearInterval(routineTimer);
+            routineActive = true;
+            routineStartTime = Date.now();
+            resetStepUI();
+
+            routineTimer = setInterval(() => {
+                const e = Date.now() - routineStartTime;
+
+                if (e < 2000) {
+                    highlightStep(1);
+                    document.getElementById('pbar1').style.width = `${(e/2000)*100}%`;
+                } else if (e < 5000) {
+                    highlightStep(2);
+                    document.getElementById('pbar1').style.width = '100%';
+                    document.getElementById('pbar2').style.width = `${((e-2000)/3000)*100}%`;
+                } else if (e < 7000) {
+                    highlightStep(3);
+                    document.getElementById('pbar1').style.width = '100%';
+                    document.getElementById('pbar2').style.width = '100%';
+                    document.getElementById('pbar3').style.width = `${((e-5000)/2000)*100}%`;
+                } else {
+                    resetRoutineProgress();
+                    addLog("Rutina completada.");
+                }
+            }, 50);
+        }
+
+        function resetRoutineProgress() {
+            if (routineTimer) { clearInterval(routineTimer); routineTimer = null; }
+            routineActive = false;
+            resetStepUI();
+        }
+
+        // --- TRIM ---
+        function updateTrimUI() {
+            for (let i = 1; i <= 4; i++) {
+                const val = parseInt(document.getElementById(`trimSlider${i}`).value);
+                const el = document.getElementById(`trimVal${i}`);
+                el.textContent = val > 0 ? `+${val}` : val;
+                el.className = 'trim-val ' + (val > 0 ? 'positive' : val < 0 ? 'negative' : 'zero');
+            }
+        }
+
+        async function sendTrim() {
+            ipAddress = document.getElementById('ipInput').value.trim();
+            const m1 = document.getElementById('trimSlider1').value;
+            const m2 = document.getElementById('trimSlider2').value;
+            const m3 = document.getElementById('trimSlider3').value;
+            const m4 = document.getElementById('trimSlider4').value;
+
+            const url = `http://${ipAddress}/trim?m1=${m1}&m2=${m2}&m3=${m3}&m4=${m4}`;
+            addLog(`Enviando trim: M1=${m1} M2=${m2} M3=${m3} M4=${m4}`);
+
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    addLog(`Trim actualizado en el dron: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    addLog(`Error: HTTP ${res.status}`, 'error');
+                }
+            } catch (err) {
+                addLog(`Error al enviar trim: ${err.message}`, 'error');
+            }
+        }
+
+        function syncTrimsFromDrone(data) {
+            if (data.trimM1 !== undefined) {
+                document.getElementById('trimSlider1').value = data.trimM1;
+                document.getElementById('trimSlider2').value = data.trimM2;
+                document.getElementById('trimSlider3').value = data.trimM3;
+                document.getElementById('trimSlider4').value = data.trimM4;
+                updateTrimUI();
+                addLog(`Trims sincronizados desde el dron.`, 'success');
+            }
+        }
+
+        // Inicializar UI de trims
+        updateTrimUI();
+
+        // --- POLLING ---
+        function startPollingStatus() {
+            if (pollInterval) clearInterval(pollInterval);
+
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`http://${ipAddress}/status`, {
+                        signal: AbortSignal.timeout ? AbortSignal.timeout(800) : undefined
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setConnected(true);
+                        updateTelemetry(data);
+                    } else {
+                        setConnected(false);
+                    }
+                } catch (err) {
+                    if (isConnected) {
+                        setConnected(false);
+                        addLog("Pérdida de conexión con el dron...", "error");
+                    }
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Build y binarios compilados
+*.bin
+*.elf
+*.hex
+*.o
+*.d
+
+# Entornos y dependencias de Flutter
+.dart_tool/
+.packages
+build/
+android/.gradle
+windows/flutter/ephemeral/
+
+# Archivos de sistema y editores
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/

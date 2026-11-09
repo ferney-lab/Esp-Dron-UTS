@@ -86,3 +86,4 @@ Para la réplica del hardware, calibración de sensores y procedimientos paso a 
 
 ## 📄 Licencia
 Este desarrollo tiene fines educativos y de investigación, desarrollado en el marco del grupo **GNET** de las **Unidades Tecnológicas de Santander**.
+

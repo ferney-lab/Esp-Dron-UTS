@@ -131,6 +131,10 @@ Para operar el minidrón con total seguridad, siga estrictamente el protocolo de
 
 ## 5. Guía Completa de Uso de la Aplicación
 
+<p align="center">
+  <img src="../assets/app_interfaz.png" alt="Panel de Control ESP-DRONE UTS" width="350"/>
+</p>
+
 La interfaz de usuario está dividida en cuatro bloques operativos:
 
 ### 🎮 A. Joysticks Virtuales Táctiles (Vuelo Manual)
@@ -145,31 +149,33 @@ La interfaz de usuario está dividida en cuatro bloques operativos:
 * 🛑 **STOP (Parada de Emergencia):**
   * **Efecto:** Corta de manera instantánea el 100 % del PWM a los 4 motores (potencia 0). Se debe presionar ante cualquier colisión inminente o pérdida de orientación.
 * 🛫 **DESPEGAR (Despegue Progresivo):**
-  * **Efecto:** Inicia una aceleración suave mediante curva S durante 3 segundos hasta alcanzar la potencia nominal de sustentación (*Hover* = 70 %), manteniéndose flotando de forma asistida.
+  * **Efecto:** Inicia una aceleración suave mediante curva S durante 3 segundos hasta alcanzar la potencia nominal de sustentación (*Hover* = 64-70 %), manteniéndose flotando de forma asistida.
 * 🛬 **ATERRIZAR:**
   * **Efecto:** Reduce el empuje gradualmente a una tasa controlada hasta que el acelerómetro detecta contacto con el piso (>20 ms), momento en el cual apaga los motores automáticamente.
 * 1️⃣ **1 VERTICAL:**
-  * **Efecto:** Dispara la Rutina 1 de despegue vertical autónomo, sustentación y aterrizaje.
+  * **Efecto:** Dispara la Rutina 1 de despegue vertical autónomo, sustentación y aterrizaje suave.
 * 2️⃣ **2 DERECHA:**
-  * **Efecto:** Dispara la Rutina 2 de despegue, traslación lateral a la derecha, frenado dinámico y aterrizaje.
-* 3️⃣ **3 VUELTA IZQUIERDA:**
-  * **Efecto:** Dispara la Rutina 3 de despegue vertical, rotación yaw de 360° en sentido antihorario y aterrizaje.
+  * **Efecto:** Dispara la Rutina 2 de despegue, traslación lateral a la derecha/izquierda, frenado dinámico y aterrizaje.
+* 3️⃣ **3 VUELTA IZQ.:**
+  * **Efecto:** Dispara la Rutina 3 de despegue vertical, rotación yaw de 360° en sentido antihorario y aterrizaje en una posición diferente a la de partida.
 
-### ⚙️ C. Parámetros de Calibración en Pantalla
-* **Subida (s):** Tiempo de empuje ascendente post-detección de despegue (por defecto: `1.2` s).
-* **Arriba / Hover (s):** Tiempo de sustentación estacionaria en el punto más alto antes de iniciar el descenso (por defecto: `5.0` s).
-* **Hover (%):** Porcentaje de acelerador estimado para vencer la gravedad del dron (por defecto: `70 %`).
-* **Max (%):** Límite máximo de PWM para proteger la celda de la batería y los bobinados de los motores.
-* **Ángulo Max (°):** Ángulo máximo de inclinación permitido por el lazo PID para evitar pérdidas de sustentación por sobreinclinación (tope de seguridad: `20°`).
+### ⚙️ C. Parámetros de Calibración y Control en Pantalla
+* **Subida s [1.2]:** Tiempo en segundos de aceleración ascendente tras despegar del suelo (por defecto: `1.2` s).
+* **Arriba s [5]:** Tiempo de sustentación estacionaria (*Hover*) en el punto más alto antes de descender (por defecto: `5.0` s).
+* **Hover % [64]:** Porcentaje base de aceleración PWM calibrado para vencer el peso del dron (por defecto: `64 %`).
+* **Max % [100]:** Límite máximo de potencia PWM permitido a los motores coreless.
+* **Ang max [15]:** Ángulo máximo de inclinación permitido por el lazo PID para prevenir sobreinclinación (tope de seguridad: `15°`).
+* **Invertir pitch / Invertir roll:** Casillas de verificación para adaptar el sentido de control de los joysticks según la orientación del operador.
+* **Avisos de Nivelación:** Mensajes de seguridad interactivos como *"Superficie muy inclinada: ponlo en piso plano"* si los ángulos iniciales exceden el margen admisible para calibrar.
 
 ### 📊 D. Panel de Telemetría en Tiempo Real
 * **R (Roll):** Ángulo de inclinación lateral actual en grados (°).
 * **P (Pitch):** Ángulo de inclinación longitudinal actual en grados (°).
-* **Y (Yaw):** Orientación angular actual en grados (°).
-* **T (Thrust):** Porcentaje de aceleración global aplicado.
-* **M1, M2, M3, M4:** Potencia porcentual individual entregada a cada uno de los 4 motores por el mezclador de vuelo.
-* **BAT:** Voltaje medido de la batería LiPo (ejemplo: `3.82 V`).
-* **Estado:** Mensaje del secuenciador (`LISTO`, `CALIBRANDO`, `DESPEGANDO`, `EN EL AIRE`, `ATERRIZANDO`).
+* **Y (Yaw):** Orientación angular azimutal actual en grados (°).
+* **T (Thrust):** Porcentaje de aceleración global aplicado (0 a 100 %).
+* **M (M1, M2, M3, M4):** Potencia porcentual individual enviada a cada motor por el mezclador en X.
+* **BAT:** Voltaje medido en tiempo real de la batería LiPo (ejemplo: `3.87 V`).
+* **Estado:** Mensaje del secuenciador interno (`LISTO`, `CALIBRANDO`, `DESPEGANDO`, `EN EL AIRE`, `ATERRIZANDO`).
 
 ---
 
@@ -197,6 +203,7 @@ Cada una de las tres rutinas programadas ejecuta una secuencia cinemática prede
 ---
 
 ### 1️⃣ Rutina 1: Vuelo Vertical Asistido (Hover Estacionario)
+* **Descripción Operativa:** El minidrón inicia en el suelo sobre superficie plana, se eleva de forma vertical durante un intervalo de tiempo programado (1.2 s de ascenso + 5.0 s de hover estacionario), desciende progresivamente hasta posarse suavemente en el suelo, apaga los motores y queda en reposo a la espera de su siguiente orden.
 * **Objetivo:** Demostrar despegue autónomo, sustentación estable en punto fijo y aterrizaje sin volcaduras.
 * **Secuencia de Fases:**
   1. **Fase 0 (Inicio):** Dron posado en el suelo en estado `LISTO`. Batería mayor a 3.8 V.
@@ -205,12 +212,13 @@ Cada una de las tres rutinas programadas ejecuta una secuencia cinemática prede
   4. **Fase 3 (Ascenso Controlado - 1.2 s):** El empuje se fija en el valor de *Hover* con rampa positiva, alcanzando una cota de altura de **~35 a 40 cm**.
   5. **Fase 4 (Sustentación Estacionaria / Hover - 5.0 s):** El dron permanece flotando en el aire. El lazo PID en cascada corrige activamente cualquier desbalance de peso o corrientes de aire manteniendo los ángulos en $0^\circ \pm 1.5^\circ$.
   6. **Fase 5 (Descenso Progresivo):** El empuje decrece paulatinamente a razón de 0.5 %/s para mitigar el efecto de vórtice de anillo (*vortex ring state*).
-  7. **Fase 6 (Contacto y Apagado):** Al tocar tierra, la desaceleración sostenida (>20 ms) confirma el aterrizaje; los motores se apagan de inmediato ($0\%$). El dron vuelve al estado `LISTO`.
+  7. **Fase 6 (Contacto y Apagado):** Al tocar tierra, la desaceleración sostenida (>20 ms) confirma el aterrizaje; los motores se apagan de inmediato ($0\%$). El dron vuelve al estado `LISTO` a la espera de su siguiente orden.
 * **Tiempo Total Estimado:** ~10 a 11 segundos.
 
 ---
 
 ### 2️⃣ Rutina 2: Traslación Lateral Derecha Coordinada
+* **Descripción Operativa:** El minidrón inicia en el suelo, se eleva verticalmente y realiza una inclinación lateral controlada hacia un costado (desplazamiento hacia la derecha o izquierda según su orientación inicial), frena dinámicamente su inercia, desciende suavemente hasta aterrizar, apaga motores y queda a la espera de su siguiente orden.
 * **Objetivo:** Demostrar control de actitud direccional en el eje de alabeo (*Roll*), desplazamiento horizontal y frenado inercial activo.
 * **Secuencia de Fases:**
   1. **Fase 0 y 1 (Calibración y Despegue):** Recalibración del giroscopio (1.0 s) y ascenso vertical durante 1.2 s hasta alcanzar la cota de crucero (~35 a 40 cm).
@@ -218,19 +226,20 @@ Cada una de las tres rutinas programadas ejecuta una secuencia cinemática prede
   3. **Fase 3 (Inclinación y Desplazamiento - 1.2 s):** El controlador inyecta una consigna de inclinación de **Roll = +8.0° hacia la derecha**. El dron se desplaza lateralmente recorriendo una distancia de aproximadamente **50 a 60 cm**.
   4. **Fase 4 (Frenado Activo y Contrarresto - 1.2 s):** Para anular la inercia acumulada, el lazo aplica una consigna de contrarresto de alabeo hacia la izquierda (Roll negativo) hasta detener el avance lateral.
   5. **Fase 5 (Estabilización en Punto Fijo - 1.5 s):** El dron retoma el ángulo horizontal plano ($0^\circ$).
-  6. **Fase 6 (Aterrizaje y Apagado):** Rampa suave de descenso, contacto con el suelo, corte de PWM a 0 % y transición al estado `LISTO`.
+  6. **Fase 6 (Aterrizaje y Apagado):** Rampa suave de descenso, contacto con el suelo, corte de PWM a 0 % y transición al estado `LISTO` a la espera de su siguiente orden.
 * **Tiempo Total Estimado:** ~12 a 13 segundos.
 
 ---
 
 ### 3️⃣ Rutina 3: Giro de Guiñada (Yaw) 360° en Sentido Antihorario
+* **Descripción Operativa:** El minidrón se eleva desde el suelo, realiza una traslación hacia su izquierda ejecutando un giro coordinado sobre su eje de guiñada (Yaw) y aterriza en un punto distante de su posición de partida, apagando motores y quedando a la espera de su siguiente orden.
 * **Objetivo:** Demostrar desacoplo aerodinámico y control independiente sobre el eje Z (*Yaw*) mediante diferencial de torque reactivo de los motores.
 * **Secuencia de Fases:**
   1. **Fase 0 y 1 (Calibración y Despegue):** Calibración de referencia inercial y elevación suave hasta ~35 a 40 cm de altura.
   2. **Fase 2 (Estabilización de Actitud - 0.3 s):** Nivela el dron en posición horizontal.
   3. **Fase 3 (Rotación Controlada de 360° - ~4.0 s):** El controlador de velocidad angular comanda una velocidad de giro sostenida de **$\dot{\psi} = 90^\circ/\text{s}$ en sentido antihorario** (hacia la izquierda visto desde arriba). Los motores CCW (M1 y M3) aceleran ligeramente mientras los CW (M2 y M4) deceleran, generando el torque puro sin alterar la sustentación global. El dron completa una circunferencia de 360°.
   4. **Fase 4 (Frenado de Rotación y Amortiguamiento - 1.5 s):** El PID de yaw aplica torque inverso para frenar la rotación exactamente al completar el giro, estabilizando la orientación.
-  5. **Fase 5 (Descenso y Apagado):** Reducción de potencia, detección de superficie de aterrizaje, corte de motores y retorno al estado `LISTO`.
+  5. **Fase 5 (Descenso y Apagado):** Reducción de potencia, detección de superficie de aterrizaje en un punto distante al inicial, corte de motores y retorno al estado `LISTO` a la espera de su siguiente orden.
 * **Tiempo Total Estimado:** ~14 segundos.
 
 ---

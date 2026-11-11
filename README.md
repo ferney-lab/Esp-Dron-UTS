@@ -1,7 +1,7 @@
 # ESP-DRONE UTS: Rutinas de Vuelo Automatizadas con ESP32-S2 y MPU6050
 
 <p align="center">
-  <img src="assets/app_interfaz.png" alt="ESP-DRONE UTS Panel Principal" width="550"/>
+  <img src="assets/app_interfaz.png" alt="ESP-DRONE UTS Panel Principal" width="340"/>
 </p>
 
 Repositorio oficial del proyecto de grado para optar al título de **Tecnólogo en Gestión de Sistemas de Telecomunicaciones** en las **Unidades Tecnológicas de Santander (UTS)**.
@@ -31,9 +31,9 @@ El minidrón cuenta con un sistema de control dual:
 
 | Rutina | Maniobra de Vuelo | Video Demostrativo |
 | :--- | :--- | :---: |
-| **Rutina 1** | Despegue vertical con rampa de empuje, hover estacionario estabilizado y descenso suave con corte de seguridad | [Ver en YouTube](https://youtube.com/shorts/9VxdEOls3PE) |
-| **Rutina 2** | Elevación progresiva, sustentación prolongada y compensación activa de actitud ante perturbaciones | [Ver en YouTube](https://youtube.com/shorts/wIUHFMTDS0Y) |
-| **Rutina 3** | Trayectoria coordinada completa y control de descenso en área delimitada | [Ver en YouTube](https://youtube.com/shorts/wp47Jiy3K9M) |
+| **Rutina 1** | El minidrón inicia en el suelo sobre superficie plana, se eleva de forma vertical durante un intervalo programado (ascenso y hover estabilizado), desciende de forma controlada hasta posarse suavemente en tierra, apaga los motores y queda en reposo a la espera de su siguiente orden. | [Ver en YouTube](https://youtube.com/shorts/9VxdEOls3PE) |
+| **Rutina 2** | El minidrón inicia en el suelo, se eleva verticalmente y realiza una inclinación lateral controlada hacia un costado (desplazamiento a la derecha o izquierda según su orientación inicial), frena dinámicamente su inercia, desciende suavemente hasta aterrizar, apaga motores y queda a la espera de su siguiente orden. | [Ver en YouTube](https://youtube.com/shorts/wIUHFMTDS0Y) |
+| **Rutina 3** | El minidrón se eleva desde el suelo, realiza una traslación hacia su izquierda ejecutando un giro completo sobre su eje de guiñada (Yaw) y aterriza en una posición distinta a la de partida, apagando motores y quedando a la espera de su siguiente orden. | [Ver en YouTube](https://youtube.com/shorts/wp47Jiy3K9M) |
 
 ---
 
@@ -94,39 +94,49 @@ El firmware del minidrón integra una **PWA nativa** en el ESP32-S2 que permite 
 
 ---
 
-## 🎮 Guía de Uso de la Aplicación y Funciones de Cada Botón
+## 🎮 Guía de Uso de la Aplicación y Funciones de Cada Elemento
 
 <p align="center">
-  <img src="assets/app_guia_funcional.png" alt="Distribución Funcional de la Aplicación" width="550"/>
+  <img src="assets/app_interfaz.png" alt="Panel de Control ESP-DRONE UTS" width="340"/>
 </p>
 
 ### 1. Botones Principales de Control
-* 🛑 **STOP (Parada de Emergencia):**  
-  Corta inmediatamente el 100 % de la potencia (PWM = 0) a los cuatro motores. Prioridad absoluta ante choques o desvíos.
-* 🛫 **DESPEGAR (Despegue Progresivo Asistido):**  
-  Aplica una rampa suave en curva S durante 3 segundos hasta alcanzar la potencia de sustentación (*Hover* al 70 %) y mantiene la estabilidad en vuelo.
-* 🛬 **ATERRIZAR:**  
+* 🛑 **STOP (Parada de Emergencia - Rojo):**  
+  Corta instantáneamente el 100 % de la potencia (PWM = 0) a los cuatro motores. Prioridad absoluta ante choques o desvíos.
+* 🛫 **DESPEGAR (Despegue Progresivo Asistido - Verde):**  
+  Aplica una rampa suave en curva S durante 3 segundos hasta alcanzar la potencia de sustentación (*Hover* al 64-70 %) y mantiene la estabilidad en vuelo.
+* 1️⃣ **1 VERTICAL (Azul):** Dispara la rutina de vuelo vertical autónomo (subir, flotar en hover estacionario y aterrizar suavemente).
+* 2️⃣ **2 DERECHA (Azul Claro):** Dispara la rutina de traslación lateral coordinada y retorno seguro a tierra.
+* 3️⃣ **3 VUELTA IZQ. (Morado):** Dispara la maniobra de rotación coordinada de 360° en el eje de guiñada (*Yaw*) y aterrizaje en posición distante.
+* 🛬 **ATERRIZAR (Naranja):**  
   Inicia una rampa de descenso suave y progresiva; al detectar el contacto con el suelo (>20 ms de desaceleración sostenida), apaga los motores automáticamente.
-* 1️⃣ **1 VERTICAL:** Dispara la secuencia de vuelo vertical autónomo (subir, flotar y aterrizar).
-* 2️⃣ **2 DERECHA:** Dispara la secuencia de traslación horizontal a la derecha y retorno seguro a tierra.
-* 3️⃣ **3 VUELTA IZQUIERDA:** Dispara la maniobra de rotación completa de 360° en el eje de guiñada (*Yaw*) y aterrizaje.
 
-### 2. Controles de Vuelo Manual (Joysticks Virtuales)
-* **Joystick Izquierdo (Acelerador y Guiñada):**
-  * **Eje Vertical (Thrust):** Control de empuje global (0 % a 100 %).
-  * **Eje Horizontal (Yaw):** Rotación del dron sobre su propio eje vertical (giro horario/antihorario).
-* **Joystick Derecho (Alabeo y Cabeceo):**
-  * **Eje Vertical (Pitch):** Inclinación hacia adelante o atrás para avanzar o retroceder.
-  * **Eje Horizontal (Roll):** Inclinación lateral izquierda o derecha para traslación de lado.
+### 2. Parámetros de Control y Calibración en Vivo
+* **Subida s [1.2]:** Tiempo en segundos de aceleración ascendente programado para las rutinas.
+* **Arriba s [5]:** Tiempo en segundos que el dron se mantiene flotando en el aire (*Hover* estacionario).
+* **Hover % [64]:** Porcentaje base de empuje PWM requerido para la sustentación del minidrón.
+* **Max % [100]:** Límite máximo de potencia permitida a los cuatro motores coreless.
+* **Ang max [15]:** Ángulo límite de inclinación de seguridad en grados (15°) para evitar pérdidas de sustentación.
+* **Invertir pitch / Invertir roll:** Casillas de verificación para adaptar la dirección de inclinación de los controles manuales según la orientación del usuario.
+* **Aviso de Nivelación:** Indicación interactiva *"Superficie muy inclinada: ponlo en piso plano"* cuando el dron detecta inclinación excesiva durante la calibración inicial.
 
-### 3. Barra de Telemetría en Tiempo Real
-* **R (Roll):** Ángulo de inclinación lateral en grados (°).
-* **P (Pitch):** Ángulo de inclinación longitudinal en grados (°).
-* **Y (Yaw):** Orientación angular actual en grados (°).
-* **T (Thrust):** Porcentaje de aceleración global suministrado a los motores.
-* **M1, M2, M3, M4:** Potencia individual enviada a cada motor por el mezclador de vuelo.
-* **BAT:** Voltaje medido en vivo de la batería LiPo (ejemplo: `3.84 V`).
+### 3. Controles de Vuelo Manual (Joysticks Virtuales)
+* **Joystick Izquierdo (THRUST / YAW):**
+  * **Eje Vertical (Thrust / Empuje):** Control de aceleración y altura global (0 % a 100 %).
+  * **Eje Horizontal (Yaw / Guiñada):** Rotación del dron sobre su propio eje vertical Z (giro horario/antihorario).
+* **Joystick Derecho (ROLL / PITCH):**
+  * **Eje Vertical (Pitch / Cabeceo):** Inclinación hacia adelante o atrás para avanzar o retroceder.
+  * **Eje Horizontal (Roll / Alabeo):** Inclinación lateral izquierda o derecha para traslación de lado.
+
+### 4. Barra Superior de Telemetría en Tiempo Real
 * **Estado:** Indicador de fase actual (`LISTO`, `CALIBRANDO`, `DESPEGANDO`, `EN EL AIRE`, `ATERRIZANDO`).
+* **R (Roll):** Ángulo de inclinación lateral en grados (ejemplo: `0.7°`).
+* **P (Pitch):** Ángulo de inclinación longitudinal en grados (ejemplo: `0.6°`).
+* **Y (Yaw):** Orientación angular actual en grados (ejemplo: `76°`).
+* **T:** Porcentaje de aceleración global suministrado a los motores (`T 0%`).
+* **M (M1, M2, M3, M4):** Potencia individual enviada a cada motor por el mezclador (`M 0 0 0 0`).
+* **BAT:** Voltaje medido en vivo de la batería LiPo (ejemplo: `BAT 3.87 V`).
+* **Hover:** Indicador de empuje de sustentación estimado.
 
 ---
 
@@ -148,66 +158,52 @@ El firmware del minidrón integra una **PWA nativa** en el ESP32-S2 que permite 
 Cada rutina ha sido programada y verificada matemáticamente y en pruebas de campo:
 
 ### 1️⃣ Rutina 1: Vuelo Vertical Asistido (Hover y Aterrizaje)
+* **Maniobra Operativa:** El minidrón inicia en el suelo sobre superficie plana, se eleva de forma vertical durante un intervalo programado (1.2 s de ascenso + 5.0 s de hover estacionario), desciende progresivamente hasta posarse suavemente en el suelo, apaga los motores y queda en reposo a la espera de su siguiente orden.
 * **Punto de Partida:** Dron ubicado en el suelo en posición completamente horizontal.
 * **Fase 1 (Recalibración de Giroscopio - 1.0 s):** Motores apagados. El sensor MPU6050 actualiza su sesgo de cero para garantizar máxima precisión.
 * **Fase 2 (Despegue Progresivo):** Rampa suave de aceleración hasta que el acelerómetro detecta que el dron se despega del suelo.
 * **Fase 3 (Ascenso Controlado - 1.2 s):** Sube hasta alcanzar una altura aproximada de **35 a 40 cm**.
 * **Fase 4 (Hover Estacionario - 5.0 s):** Se mantiene flotando en el aire a altura constante; el controlador PID compensa perturbaciones de viento o desbalances de peso manteniendo el chasis plano ($0^\circ$).
 * **Fase 5 (Descenso y Aterrizaje):** Reduce el empuje de forma progresiva a 0.5 %/s hasta posarse suavemente en el suelo.
-* **Fase 6 (Finalización):** Al detectar contacto con el suelo (>20 ms), apaga todos los motores y vuelve al estado `LISTO` a la espera de una nueva orden.
+* **Fase 6 (Finalización):** Al detectar contacto con el suelo (>20 ms), apaga todos los motores y vuelve al estado `LISTO` a la espera de su siguiente orden.
 * ⏱️ **Duración total:** ~10 a 11 segundos.
 
 ---
 
-### 2️⃣ Rutina 2: Traslación Lateral a la Derecha
+### 2️⃣ Rutina 2: Traslación Lateral Derecha Coordinada
+* **Maniobra Operativa:** El minidrón inicia en el suelo, se eleva verticalmente y realiza una inclinación lateral controlada hacia un costado (desplazamiento hacia la derecha o izquierda según su orientación inicial), frena dinámicamente su inercia, desciende suavemente hasta aterrizar, apaga motores y queda a la espera de su siguiente orden.
 * **Punto de Partida:** Dron en el suelo.
 * **Fase 1 (Despegue y Elevación - 1.2 s):** Calibración y ascenso vertical hasta la altura de crucero (~35 a 40 cm).
 * **Fase 2 (Estabilización - 0.3 s):** Nivela el dron en el aire.
 * **Fase 3 (Desplazamiento Lateral - 1.2 s):** El controlador inclina el dron con un ángulo de **Roll = +8° hacia la derecha**, generando un desplazamiento lateral controlado de **50 a 60 cm**.
 * **Fase 4 (Frenado Dinámico Activo - 1.2 s):** Aplica una inclinación contraria hacia la izquierda para anular la inercia acumulada y detener el avance.
 * **Fase 5 (Estabilización Final - 1.5 s):** Recupera la actitud horizontal ($0^\circ$) en punto fijo.
-* **Fase 6 (Descenso y Apagado):** Aterriza de forma suave, corta la potencia a los 4 motores y regresa a estado `LISTO`.
+* **Fase 6 (Descenso y Apagado):** Aterriza de forma suave, corta la potencia a los 4 motores y regresa a estado `LISTO` a la espera de su siguiente orden.
 * ⏱️ **Duración total:** ~12 a 13 segundos.
 
 ---
 
 ### 3️⃣ Rutina 3: Vuelta Completa a la Izquierda (Giro Yaw 360°)
+* **Maniobra Operativa:** El minidrón se eleva desde el suelo, realiza una traslación hacia su izquierda ejecutando un giro completo sobre su eje de guiñada (Yaw) y aterriza en una posición distinta a la de partida, apagando motores y quedando a la espera de su siguiente orden.
 * **Punto de Partida:** Dron en el suelo.
 * **Fase 1 (Despegue y Elevación):** Ascenso suave hasta 35 a 40 cm de altura.
 * **Fase 2 (Estabilización - 0.3 s):** Retención de altura horizontal.
 * **Fase 3 (Rotación 360° en Yaw - ~4.0 s):** Comanda una velocidad angular de **90°/segundo en sentido antihorario** (hacia la izquierda visto desde arriba). Los motores diagonales modulan su torque reactivo completando una rotación exacta de 360° sobre su propio centro de gravedad.
 * **Fase 4 (Amortiguamiento Angular - 1.5 s):** El PID de guiñada frena la rotación y estabiliza la orientación del dron.
-* **Fase 5 (Aterrizaje y Apagado):** Descenso progresivo, contacto en tierra, corte de motores y retorno al estado `LISTO` a la espera de la siguiente orden.
+* **Fase 5 (Aterrizaje y Apagado):** Descenso progresivo, contacto en tierra en un punto diferente al original, corte de motores y retorno al estado `LISTO` a la espera de su siguiente orden.
 * ⏱️ **Duración total:** ~14 segundos.
 
 ---
 
-## 🔨 Construcción y Ensamble del Dron (Capítulo 4 del Informe)
+## 🎯 Objetivos del Proyecto
 
-<p align="center">
-  <img src="assets/minidron_ensamblado.png" alt="Minidron ESP32-S2 Drone V1.2 Ensamblado" width="450"/>
-</p>
+### 📌 Objetivo General
+Desarrollar un sistema que permita la ejecución de rutinas de vuelo automatizadas básicas en el minidrón ESP-Drone basado en ESP32-S2-MINI-2 y MPU6050, mediante el envío de comandos desde una aplicación móvil a través de comunicación inalámbrica WiFi, con base en secuencias de movimiento controladas por tiempo, logrando trayectorias autónomas estables y reproducibles.
 
-### 1. Arquitectura de Chasis y Disposición en "X"
-El dron utiliza una estructura de cuadricóptero con disposición en **"X"**, lo que proporciona un balance simétrico de empuje entre los ejes de alabeo (Roll) y cabeceo (Pitch). 
-
-### 2. Soldadura y Polarización de los Motores
-La correcta conexión de los cuatro motores coreless a la tarjeta PCB principal es fundamental para el vuelo:
-* **M1 (Delantero Derecho):** Giro Antihorario (CCW) — Cables negro y blanco.
-* **M2 (Trasero Derecho):** Giro Horario (CW) — Cables azul y rojo.
-* **M3 (Trasero Izquierdo):** Giro Antihorario (CCW) — Cables negro y blanco.
-* **M4 (Delantero Izquierdo):** Giro Horario (CW) — Cables azul y rojo.
-
-<p align="center">
-  <img src="assets/soldadura_motores.png" alt="Orden de colores para soldadura de motores" width="450"/>
-</p>
-
-### 3. Orientación y Dirección de Giro de las Hélices
-Para contrarrestar el torque de arrastre (*Drag Torque*) y evitar la rotación descontrolada sobre el eje de guiñada (Yaw), se colocan dos hélices con paso horario (CW) y dos con paso antihorario (CCW):
-
-<p align="center">
-  <img src="assets/giro_helices.png" alt="Dirección de giro de hélices" width="450"/>
-</p>
+### 📍 Objetivos Específicos
+1. **Diseñar una aplicación móvil** que permita seleccionar y enviar secuencias de comandos de movimiento basadas en intervalos de tiempo al minidrón mediante comunicación inalámbrica, controlando la ejecución de rutinas de vuelo automatizadas básicas.
+2. **Implementar rutinas de vuelo automatizadas básicas** en el ESP-Drone mediante la programación de secuencias de movimiento controladas por tiempo e integración del sensor MPU6050, logrando desplazamientos estables y controlados sin dependencia de posicionamiento espacial.
+3. **Evaluar el desempeño del sistema** mediante pruebas de vuelo controladas, verificando la estabilidad y repetibilidad de las rutinas basadas en tiempo programadas.
 
 ---
 
@@ -236,7 +232,7 @@ Para conocer a fondo el circuito esquemático, cálculos matemáticos del PID, d
 
 ```bash
 esp-drone-uts/
-├── assets/                 # Imágenes, capturas de app, fotos de ensamble y esquemas
+├── assets/                 # Captura oficial de la aplicación móvil ESP-DRONE UTS
 ├── firmware/               # Firmware para ESP32-S2 (Arduino IDE / C++)
 │   └── esp_drone_firmware.ino
 ├── manual/                 # Manuales técnicos y guías de operación

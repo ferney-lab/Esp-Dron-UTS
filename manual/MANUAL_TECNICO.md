@@ -279,3 +279,4 @@ Escriba los siguientes comandos interactivos para depuración avanzada:
 | Los motores giran pero el dron no despega del suelo. | Batería descargada o hélices al revés empujando hacia abajo. | Mida la batería con el comando `bat` (debe ser $\ge 3.8\text{ V}$). Compruebe que el flujo de aire sople hacia abajo y no hacia arriba. |
 | La app o navegador no se conecta a `192.168.43.42`. | Celular cambió a datos móviles o Wi-Fi desconectado. | Desactive los datos móviles en su celular para obligar a que todo el tráfico local vaya por la red Wi-Fi del dron. Verifique el SSID. |
 | La rutina aborta antes de subir. | Voltaje cae por debajo de 3.2 V bajo carga o acelerómetro detectó inclinación > 60°. | Recargue la batería LiPo a 4.20 V con el cargador TP4056. Revise que la superficie de despegue esté nivelada. |
+

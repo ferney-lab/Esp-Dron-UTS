@@ -5,7 +5,10 @@ En esta carpeta se encuentra la aplicación móvil oficial **ESP DRONE UTS** par
 ---
 
 ## 📦 Archivos Disponibles
-* **`ESP_DRONE_UTS_v1.0.apk`** (6.99 MB): Paquete instalable para dispositivos con sistema operativo Android.
+* ⬇️ **[Descargar ESP_DRONE_UTS_v1.0.apk (Enlace Directo)](https://github.com/ferney-lab/Esp-Dron-UTS/raw/main/mobile_app/ESP_DRONE_UTS_v1.0.apk)** (6.99 MB)
+
+> ℹ️ **Nota si abres el archivo en la web de GitHub:**  
+> Si haces clic en el archivo `.apk` dentro de la lista de archivos de GitHub, la pantalla mostrará el mensaje: *"Disculpen las molestias, pero en este momento no podemos mostrar archivos de este tamaño"*. Esto ocurre porque GitHub no puede previsualizar archivos binarios de más de 1 MB. Para descargarlo a tu celular o PC, simplemente pulsa el botón **`Download`** (o **`View raw`**) que aparece en esa misma pantalla, o usa el enlace directo de arriba.
 
 ---
 
@@ -57,3 +60,4 @@ Para que los usuarios de iPhone puedan tener exactamente la misma experiencia de
 4. **Uso como App Nativa:**
    * En la pantalla principal de su iPhone aparecerá el ícono de **ESP-DRONE UTS**.
    * Al tocarlo, la aplicación se abrirá en **pantalla completa** (sin marcos ni barras de Safari), con guardado en caché local, controles táctiles optimizados y respuesta en tiempo real idéntica a una aplicación nativa descargada de la App Store.
+

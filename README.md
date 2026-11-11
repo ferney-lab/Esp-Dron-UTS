@@ -40,7 +40,11 @@ El minidrón cuenta con un sistema de control dual:
 ## 📱 Aplicación Móvil: Descarga e Instalación (Android e iPhone)
 
 El repositorio incluye la versión compilada oficial de la aplicación móvil en la carpeta [`mobile_app/`](mobile_app/):
-* 📦 **Descarga Directa del APK:** [`mobile_app/ESP_DRONE_UTS_v1.0.apk`](mobile_app/ESP_DRONE_UTS_v1.0.apk) (6.99 MB)
+* ⬇️ **[Descargar APK Directamente en tu Celular (Clic Aquí)](https://github.com/ferney-lab/Esp-Dron-UTS/raw/main/mobile_app/ESP_DRONE_UTS_v1.0.apk)** *(6.99 MB — Descarga directa sin pantalla de error)*
+* 📂 Ubicación en el repositorio: [`mobile_app/ESP_DRONE_UTS_v1.0.apk`](mobile_app/ESP_DRONE_UTS_v1.0.apk)
+
+> ℹ️ **¿Por qué sale el mensaje *"Disculpen las molestias, pero en este momento no podemos mostrar archivos de este tamaño"* en GitHub?**  
+> GitHub es una plataforma de código y sólo puede previsualizar en pantalla archivos de texto o imágenes de menos de 1 MB. Al abrir un archivo binario compilado como un `.apk` (7 MB), GitHub informa que no puede mostrarlo en pantalla. **Esto es completamente normal:** para descargarlo solo debes hacer clic en el botón **`Download`** (o **`Descargar`**) que aparece en la parte superior derecha de esa pantalla, o bien utilizar el enlace de **[Descarga Directa](https://github.com/ferney-lab/Esp-Dron-UTS/raw/main/mobile_app/ESP_DRONE_UTS_v1.0.apk)**.
 
 ```
                        ┌───────────────────────────────────────────────┐
@@ -240,11 +244,9 @@ esp-drone-uts/
 │   ├── Manual_Tecnico_MiniDron_ESP32.pdf
 │   ├── Manual_Tecnico_MiniDron_ESP32.docx
 │   └── README.md
-├── mobile_app/             # Aplicación móvil oficial
-│   ├── ESP_DRONE_UTS_v1.0.apk  # APK instalable para Android
-│   └── README.md           # Guía de instalación para Android e iPhone
-└── web_interface/          # Servidor y panel web HTML5 embebido
-    └── control_drone.html
+└── mobile_app/             # Aplicación móvil oficial
+    ├── ESP_DRONE_UTS_v1.0.apk  # APK instalable para Android
+    └── README.md           # Guía de instalación para Android e iPhone
 ```
 
 ---

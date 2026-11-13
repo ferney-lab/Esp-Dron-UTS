@@ -33,6 +33,10 @@ Variables en RAM (ajustables desde la app):
 
 ## Rutina 1: Vuelo Vertical, Sustentación Temporizada y Aterrizaje
 
+### Ubicación en el código fuente
+
+![Código de la Rutina 1 – Parámetros de hover y subida](foto_codigo_rutina1.png)
+
 ### Código relevante
 
 ```cpp
@@ -70,6 +74,10 @@ Donde `d` actualiza `autoHoverS` y `c` actualiza `autoClimbS` directamente en la
 ---
 
 ## Rutina 2: Traslación Lateral Derecha con Frenado Activo
+
+### Ubicación en el código fuente
+
+![Código de la Rutina 2 – Parámetros de traslación lateral](foto_codigo_rutina2.png)
 
 ### Código relevante
 
@@ -121,6 +129,10 @@ Tiempo total = MISSION_STABLE_S + RIGHT_PUSH_S + RIGHT_PUSH_S + MISSION_AFTER_S
 ---
 
 ## Rutina 3: Giro Yaw 360° Antihorario
+
+### Ubicación en el código fuente
+
+![Código de la Rutina 3 – Parámetros de giro Yaw 360°](foto_codigo_rutina3.png)
 
 ### Código relevante
 
@@ -232,3 +244,4 @@ GET http://192.168.4.1/auto?m=1&c=1.5&d=8.0
 Esto configura la Rutina 1 con 1.5 s de subida y 8.0 s de hover antes de aterrizar.
 
 > **Nota:** Las Rutinas 2 y 3 utilizan constantes `#define` fijas que solo pueden modificarse recompilando el firmware. Esta decisión de diseño garantiza la repetibilidad de las maniobras durante las pruebas experimentales.
+
